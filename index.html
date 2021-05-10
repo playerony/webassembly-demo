@@ -13,9 +13,17 @@
     const wasmLoader = new WasmLoader();
 
     wasmLoader.wasm("/build/optimized.wasm").then((instance) => {
-      const { add } = instance
+      const { add, acos, abs, __getString, toStringTest } = instance;
 
-      document.body.innerHTML = `44 + 44 = ${add(44, 44)}`
+      const wrapperElement = document.createElement("div");
+      wrapperElement.innerHTML = `
+        abs(-5) = ${abs(-5)} <br />
+        acos(0.5) = ${acos(0.5)} <br />
+        44 + 44 = ${add(44, 44)} <br />
+        toStringTest() = ${__getString(toStringTest())}
+      `;
+
+      document.body.appendChild(wrapperElement)
     });
   </script>
 </html>
