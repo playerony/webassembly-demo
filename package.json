@@ -1,0 +1,22 @@
+{
+  "name": "webassembly-demo",
+  "version": "1.0.0",
+  "description": "webassembly demo",
+  "main": "index.js",
+  "scripts": {
+    "test": "node tests",
+    "server": "node server.js",
+    "asbuild:untouched": "asc assembly/index.ts --target debug",
+    "asbuild:optimized": "asc assembly/index.ts --target release",
+    "asbuild": "npm run asbuild:untouched && npm run asbuild:optimized"
+  },
+  "author": "Paweł Wojtasiński",
+  "license": "MIT",
+  "dependencies": {
+    "@assemblyscript/loader": "^0.18.31",
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "assemblyscript": "^0.18.31"
+  }
+}
