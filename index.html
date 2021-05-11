@@ -6,24 +6,82 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>webassembly demo</title>
   </head>
-  <body></body>
+  <body style="padding: 0; margin: 0">
+    <canvas
+      width="50"
+      height="50"
+      style="
+        width: 100%;
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+      "
+    ></canvas>
+  </body>
   <script src="https://cdn.jsdelivr.net/npm/@assemblyscript/loader/umd/index.js"></script>
   <script src="/js/loader.js"></script>
   <script>
     const wasmLoader = new WasmLoader();
 
-    wasmLoader.wasm("/build/optimized.wasm").then((instance) => {
-      const { add, acos, abs, __getString, toStringTest } = instance;
+    const runWasm = async () => {
+      const {
+        memory,
+        CHECKERBOARD_SIZE,
+        generateCheckerBoard,
+        CHECKERBOARD_BUFFER_SIZE,
+        CHECKERBOARD_BUFFER_POINTER,
+      } = await wasmLoader.wasm("/build/optimized.wasm");
 
-      const wrapperElement = document.createElement("div");
-      wrapperElement.innerHTML = `
-        abs(-5) = ${abs(-5)} <br />
-        acos(0.5) = ${acos(0.5)} <br />
-        44 + 44 = ${add(44, 44)} <br />
-        toStringTest() = ${__getString(toStringTest())}
-      `;
+      const canvasElement = document.querySelector("canvas");
+      const wasmByteMemoryArray = new Uint8Array(memory.buffer);
 
-      document.body.appendChild(wrapperElement)
-    });
+      const canvasContext = canvasElement.getContext("2d");
+      const canvasImageData = canvasContext.createImageData(
+        canvasElement.width,
+        canvasElement.height
+      );
+
+      canvasContext.clearRect(0, 0, canvasElement.width, canvasElement.height);
+
+      const getDarkValue = () => {
+        return Math.floor(Math.random() * 100);
+      };
+
+      const getLightValue = () => {
+        return Math.floor(Math.random() * 127) + 127;
+      };
+
+      const drawCheckerBoard = () => {
+        generateCheckerBoard(
+          getDarkValue(),
+          getDarkValue(),
+          getDarkValue(),
+          getLightValue(),
+          getLightValue(),
+          getLightValue()
+        );
+
+        const imageDataArray = wasmByteMemoryArray.slice(
+          CHECKERBOARD_BUFFER_POINTER.valueOf(),
+          CHECKERBOARD_BUFFER_SIZE.valueOf()
+        );
+
+        canvasImageData.data.set(imageDataArray);
+
+        canvasContext.clearRect(
+          0,
+          0,
+          canvasElement.width,
+          canvasElement.height
+        );
+
+        canvasContext.putImageData(canvasImageData, 0, 0);
+      };
+
+      drawCheckerBoard();
+
+      setInterval(drawCheckerBoard, 1000);
+    };
+
+    runWasm();
   </script>
 </html>
